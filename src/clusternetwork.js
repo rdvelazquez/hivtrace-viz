@@ -3,7 +3,8 @@ var d3 = require("d3"),
   misc = require("misc"),
   helpers = require("helpers"),
   scatterPlot = require("scatterplot"),
-  topojson = require("topojson");
+  topojson = require("topojson"),
+  clusterNetworkConstants = require("clusterNetworkConstants");
 
 var _networkGraphAttrbuteID = "patient_attribute_schema";
 var _networkNodeAttributeID = "patient_attributes";
@@ -275,7 +276,7 @@ var hivtrace_cluster_network_graph = function(
   // [OPT] attributes                  :          A JSON object with mapped node attributes
 
   // if schema is not set, set to empty dictionary
-  if (!json[_networkGraphAttrbuteID]) {
+  if (!json[clusterNetworkConstants._networkGraphAttrbuteID]) {
     json[_networkGraphAttrbuteID] = {};
   }
 
@@ -4041,7 +4042,7 @@ var hivtrace_cluster_network_graph = function(
           0,
           graph_data[_networkGraphAttrbuteID][cat_id].dimension
         ),
-        range: _networkShapeOrdering
+        range: clusterNetworkConstants["_networkShapeOrdering"]
       };
     }
   }
