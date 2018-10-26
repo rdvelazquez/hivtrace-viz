@@ -2706,6 +2706,11 @@ var hivtrace_cluster_network_graph = function(
           }
         );
 
+        // Add dropdown menus for formatting nodes (Color. Shape, Opacity, Label).
+        // The Color dropdown menu is a bit different because it has both Categorical and Continuous options.
+        // The Shape, Opacity and Label dropdowns are all very similar and are handled by the same function.
+
+        // Color dropdown menu "attributes" is used instead of "color"... idk.
         [
           d3.select(self.get_ui_element_selector_by_role("attributes")),
           d3.select(
@@ -2793,59 +2798,70 @@ var hivtrace_cluster_network_graph = function(
             });
         });
 
-        [d3.select(self.get_ui_element_selector_by_role("shapes"))].forEach(
-          function(m) {
-            m.selectAll("li").remove();
-            var cat_menu = m.selectAll("li").data(
-              [
-                [["None", null, _.partial(self.handle_shape_categorical, null)]]
-              ].concat(
-                valid_shapes.map(function(d, i) {
-                  return [
-                    [
-                      self._menu_label_gen(d),
-                      d["raw_attribute_key"],
-                      _.partial(
-                        self.handle_shape_categorical,
-                        d["raw_attribute_key"]
-                      )
-                    ]
-                  ];
-                })
-              )
-            );
+        // The function for the Shape, Opacity and Label dropdown menus.
+        function formatNodesDropdownMenus(type, handleFunction, validTypes) {
+          var formatNodesDropdownMenuLabel = d3.select(
+            self.get_ui_element_selector_by_role(type)
+          );
 
-            cat_menu
-              .enter()
-              .append("li")
-              .style("font-variant", function(d) {
-                return d[0][1] < -1 ? "small-caps" : "normal";
-              });
+          formatNodesDropdownMenuLabel.selectAll("li").remove();
+          var cat_menu = formatNodesDropdownMenuLabel.selectAll("li").data(
+            [[["None", null, _.partial(handleFunction, null)]]].concat(
+              validTypes.map(function(d, i) {
+                return [
+                  [
+                    self._menu_label_gen(d),
+                    d["raw_attribute_key"],
+                    _.partial(handleFunction, d["raw_attribute_key"])
+                  ]
+                ];
+              })
+            )
+          );
 
-            cat_menu
-              .selectAll("a")
-              .data(function(d) {
-                return d;
-              })
-              .enter()
-              .append("a")
-              .text(function(d, i, j) {
-                return d[0];
-              })
-              .attr("style", function(d, i, j) {
-                if (j == 0) {
-                  return " font-weight: bold;";
-                }
-                return null;
-              })
-              .attr("href", "#")
-              .on("click", function(d) {
-                if (d[2]) {
-                  d[2].call();
-                }
-              });
-          }
+          cat_menu
+            .enter()
+            .append("li")
+            .style("font-variant", function(d) {
+              return d[0][1] < -1 ? "small-caps" : "normal";
+            });
+
+          cat_menu
+            .selectAll("a")
+            .data(function(d) {
+              return d;
+            })
+            .enter()
+            .append("a")
+            .text(function(d, i, j) {
+              return d[0];
+            })
+            .attr("style", function(d, i, j) {
+              if (j == 0) {
+                return " font-weight: bold;";
+              }
+              return null;
+            })
+            .attr("href", "#")
+            .on("click", function(d) {
+              if (d[2]) {
+                d[2].call();
+              }
+            });
+        }
+
+        // Call the function for each menu.
+        formatNodesDropdownMenus(
+          "shapes",
+          self.handle_shape_categorical,
+          valid_shapes
         );
+        formatNodesDropdownMenus(
+          "opacity",
+          self.handle_attribute_opacity,
+          valid_scales
+        );
+        formatNodesDropdownMenus("labels", self.handle_label, valid_shapes);
 
         $(self.get_ui_element_selector_by_role("opacity_invert")).on(
           "click",
@@ -2855,7 +2871,7 @@ var hivtrace_cluster_network_graph = function(
                 self.colorizer["opacity_scale"].range().reverse()
               );
               self.update(true);
-              self.draw_attribute_labels();
+              self.draw_attribute_legend();
             }
             $(this).toggleClass("btn-active btn-default");
           }
@@ -2881,62 +2897,9 @@ var hivtrace_cluster_network_graph = function(
                 );
               });
               self.update(true);
-              self.draw_attribute_labels();
+              self.draw_attribute_legend();
             }
             $(this).toggleClass("btn-active btn-default");
-          }
-        );
-
-        [d3.select(self.get_ui_element_selector_by_role("opacity"))].forEach(
-          function(m) {
-            m.selectAll("li").remove();
-            var cat_menu = m.selectAll("li").data(
-              [
-                [["None", null, _.partial(self.handle_attribute_opacity, null)]]
-              ].concat(
-                valid_scales.map(function(d, i) {
-                  return [
-                    [
-                      d["label"],
-                      d["raw_attribute_key"],
-                      _.partial(
-                        self.handle_attribute_opacity,
-                        d["raw_attribute_key"]
-                      )
-                    ]
-                  ];
-                })
-              )
-            );
-
-            cat_menu
-              .enter()
-              .append("li")
-              .style("font-variant", function(d) {
-                return d[0][1] < -1 ? "small-caps" : "normal";
-              });
-            cat_menu
-              .selectAll("a")
-              .data(function(d) {
-                return d;
-              })
-              .enter()
-              .append("a")
-              .text(function(d, i, j) {
-                return d[0];
-              })
-              .attr("style", function(d, i, j) {
-                if (j == 0) {
-                  return " font-weight: bold;";
-                }
-                return null;
-              })
-              .attr("href", "#")
-              .on("click", function(d) {
-                if (d[2]) {
-                  d[2].call();
-                }
-              });
           }
         );
       }
@@ -3981,6 +3944,7 @@ var hivtrace_cluster_network_graph = function(
     var set_attr = "None";
 
     ["shapes"].forEach(function(lbl) {
+      console.log("lbl: ", lbl);
       d3.select(self.get_ui_element_selector_by_role(lbl))
         .selectAll("li")
         .selectAll("a")
@@ -4021,12 +3985,19 @@ var hivtrace_cluster_network_graph = function(
       self.node_shaper["category_map"] = null;
     }
     //console.log (graph_data [_networkGraphAttrbuteID][cat_id]['value_map'], self.node_shaper.domain(), self.node_shaper.range());
-    self.draw_attribute_labels();
+    self.draw_attribute_legend();
     self.update(true);
     d3.event.preventDefault();
   };
 
-  self.draw_attribute_labels = function() {
+  self.handle_label = function(cat_id) {
+    self.label = cat_id;
+    d3.select(self.get_ui_element_selector_by_role("labels_label")).html(
+      "Label: " + cat_id + ' <span class="caret"></span>'
+    );
+  };
+
+  self.draw_attribute_legend = function() {
     var determine_label_format_cont = function(field_data) {
       if ("label_format" in field_data) {
         return field_data["label_format"];
@@ -4046,8 +4017,8 @@ var hivtrace_cluster_network_graph = function(
         .attr("transform", "translate(0," + offset + ")")
         .classed("hiv-trace-legend", true)
         .append("text")
-        .text(self.legend_caption)
-        .style("font-weight", "bold");
+        .text(self.legend_caption);
+      //.style("font-weight", "bold");
       offset += 18;
     }
 
@@ -4380,7 +4351,7 @@ var hivtrace_cluster_network_graph = function(
       self.colorizer["opacity_scale"] = null;
     }
 
-    self.draw_attribute_labels();
+    self.draw_attribute_legend();
     self.update(true);
     d3.event.preventDefault();
   };
@@ -4505,7 +4476,7 @@ var hivtrace_cluster_network_graph = function(
       self.colorizer["category_map"] = null;
     }
 
-    self.draw_attribute_labels();
+    self.draw_attribute_legend();
     self.update(true);
     d3.event.preventDefault();
   };
@@ -4630,7 +4601,7 @@ var hivtrace_cluster_network_graph = function(
       self.handle_inline_charts();
     }
 
-    self.draw_attribute_labels();
+    self.draw_attribute_legend();
     self.update(true);
     d3.event.preventDefault();
   };
@@ -6647,7 +6618,7 @@ var hivtrace_cluster_network_graph = function(
     }
   }
 
-  self.draw_attribute_labels();
+  self.draw_attribute_legend();
   d3.select(self.container)
     .selectAll(".my_progress")
     .style("display", "none");
