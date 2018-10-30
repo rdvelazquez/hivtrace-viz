@@ -2640,8 +2640,6 @@ var hivtrace_cluster_network_graph = function(
                   return p + (c - mean) * (c - mean);
                 });
 
-                //console.log (d['value_range'], bins);
-
                 if (vrnc < low_var) {
                   low_var = vrnc;
                   d["scale"] = scl;
@@ -2676,7 +2674,6 @@ var hivtrace_cluster_network_graph = function(
                   _.map(graph_data.Nodes, function(nd) {
                     try {
                       var a_date = self.attribute_node_value_by_id(nd, k);
-                      //console.log (k, a_date);
                       inject_attribute_node_value_by_id(
                         nd,
                         k,
@@ -2799,7 +2796,11 @@ var hivtrace_cluster_network_graph = function(
         });
 
         // The function for the Shape, Opacity and Label dropdown menus.
-        function formatNodesDropdownMenus(type, handleFunction, validTypes) {
+        var formatNodesDropdownMenus = function(
+          type,
+          handleFunction,
+          validTypes
+        ) {
           var formatNodesDropdownMenuLabel = d3.select(
             self.get_ui_element_selector_by_role(type)
           );
@@ -2848,9 +2849,9 @@ var hivtrace_cluster_network_graph = function(
                 d[2].call();
               }
             });
-        }
+        };
 
-        // Call the function for each menu.
+        // Call the function for each menu (Shape, Opacity and Label).
         formatNodesDropdownMenus(
           "shapes",
           self.handle_shape_categorical,
@@ -3778,7 +3779,15 @@ var hivtrace_cluster_network_graph = function(
 
   function draw_a_node(container, node) {
     if (node) {
-      container = d3.select(container);
+      let container_group = d3.select(container);
+
+      /*
+      var parentSVG = d3.select("#" + self.dom_prefix + "-network-svg")
+      let parent_container_group = d3.select(container)[0][0].parentNode;
+      console.log("container: ", container)
+      console.log('parent_container_group', parent_container_group)
+      console.log('container_group', container_group)
+      */
 
       var symbol_type =
         node.hxb2_linked && !node.is_lanl
@@ -3789,7 +3798,7 @@ var hivtrace_cluster_network_graph = function(
 
       node.rendered_size = Math.sqrt(node_size(node)) / 2 + 2;
 
-      container
+      container_group
         .attr("d", misc.symbol(symbol_type).size(node_size(node)))
         .attr("class", "node")
         .classed("selected_object", function(d) {
@@ -3816,6 +3825,27 @@ var hivtrace_cluster_network_graph = function(
         .on("mouseout", node_pop_off)
         .call(network_layout.drag().on("dragstart", node_pop_off));
     }
+  }
+
+  function label_a_node(container, the_node) {
+    var parentSVG = d3.select("#" + self.dom_prefix + "-network-svg");
+    /*
+    console.log('parentSVG: ', parentSVG)
+    console.log('label_a_node(container, the_node)')
+    console.log('container: ', container)
+    console.log('the_node: ', the_node)
+    */
+
+    var x = the_node.x;
+    var y = the_node.y;
+
+    let container_group = d3.select(container);
+
+    parentSVG
+      .append("text")
+      .attr("dx", x)
+      .attr("dy", y)
+      .text("test");
   }
 
   function draw_a_cluster(container, the_cluster) {
@@ -3944,7 +3974,6 @@ var hivtrace_cluster_network_graph = function(
     var set_attr = "None";
 
     ["shapes"].forEach(function(lbl) {
-      console.log("lbl: ", lbl);
       d3.select(self.get_ui_element_selector_by_role(lbl))
         .selectAll("li")
         .selectAll("a")
@@ -3992,6 +4021,7 @@ var hivtrace_cluster_network_graph = function(
 
   self.handle_label = function(cat_id) {
     self.label = cat_id;
+    // TODO: get this to show the correct format ("Sex" instead of "birth_sex" and "race_cat" instead of "race")
     d3.select(self.get_ui_element_selector_by_role("labels_label")).html(
       "Label: " + cat_id + ' <span class="caret"></span>'
     );
@@ -4391,8 +4421,6 @@ var hivtrace_cluster_network_graph = function(
       .classed("btn-default", true);
 
     if (cat_id) {
-      //console.log (graph_data [_networkGraphAttrbuteID][cat_id]);
-
       self.colorizer["category"] = _.wrap(
         d3.scale
           .linear()
@@ -4413,7 +4441,7 @@ var hivtrace_cluster_network_graph = function(
             graph_data[_networkGraphAttrbuteID][cat_id]["scale"](arg)
           );
         }
-      ); //console.log (self.colorizer['category'].exponent ());
+      );
 
       //console.log (self.colorizer['category'] (graph_data [_networkGraphAttrbuteID][cat_id]['value_range'][0]), self.colorizer['category'] (d['value_range'][1]));
 
@@ -4938,6 +4966,13 @@ var hivtrace_cluster_network_graph = function(
 
     rendered_nodes.each(function(d) {
       draw_a_node(this, d);
+      /*
+      console.log('rendered_nodes.each(function(d) { label_a_node(this, d) }')
+      console.log('this: ', this)
+      console.log('d: ', d)
+      console.log('container_group: ', container_group)
+      */
+      //label_a_node(this, d);
     });
 
     rendered_clusters.each(function(d) {
@@ -6323,8 +6358,6 @@ var hivtrace_cluster_network_graph = function(
                         _.each(direct_links_only[0], function(n) {
                           directly_linked_ids[n.id] = true;
                         });
-
-                        //console.log (directly_linked_ids);
 
                         _social_view_handler(
                           payload[2],

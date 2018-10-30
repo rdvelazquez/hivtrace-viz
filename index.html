@@ -457,7 +457,7 @@ function HandleAppError (err_string) {
 
 var init = function(data) {
 
-  //try {
+  try {
     var graph = "trace_results" in data ? data.trace_results : data;
     var attributes = null;
 
@@ -525,12 +525,10 @@ var init = function(data) {
             var lanl_graph_rendered = new hivtrace.clusterNetwork(lanl_graph, lanl_network_container, lanl_network_status_string, lanl_network_warning, lanl_button_bar_prefix, attributes, filter_edges_toggle, null, null, parent_container);
           }
        }
-   //} 
-  /*
+   } 
    catch (e) {
      HandleAppError ("Network loading failed with the following error " + e);   
    }
-   */
 }
 
 var initialize_cluster_network_graphs = function () {
