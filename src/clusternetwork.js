@@ -2609,7 +2609,7 @@ var hivtrace_cluster_network_graph = function(
           );
         });
 
-        var valid_labels = valid_shapes.slice();
+        var valid_labels = valid_cats.slice();
         valid_labels.unshift({
           label: "id",
           type: "string",
