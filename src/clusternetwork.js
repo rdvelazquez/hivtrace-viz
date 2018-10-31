@@ -4055,8 +4055,8 @@ var hivtrace_cluster_network_graph = function(
         .attr("transform", "translate(0," + offset + ")")
         .classed("hiv-trace-legend", true)
         .append("text")
-        .text(self.legend_caption);
-      //.style("font-weight", "bold");
+        .text(self.legend_caption)
+        .style("font-weight", "bold");
       offset += 18;
     }
 
