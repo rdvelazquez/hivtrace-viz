@@ -50,5 +50,13 @@
     "format": "prettier 'src/*.js' --write",
     "precommit": "pretty-quick --staged"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "files": [
+    "dist/hivtrace.js",
+    "dist/hivtrace.css",
+    "dist/hivtrace.css.map",
+    "dist/hivtrace.min.js",
+    "vendor.js",
+    "vendor.js.map"
+  ]
 }
